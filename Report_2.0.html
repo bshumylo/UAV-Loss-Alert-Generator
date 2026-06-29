@@ -451,6 +451,21 @@
             <input type="text" id="batteryType" placeholder="Flight Battery">
         </div>
 
+        <div class="row">
+            <div class="form-group col">
+                <label>Підрозділ:
+                    <span class="tooltip-icon" style="float:right;">ℹ️
+                        <span class="tooltiptext">Зберігається локально у вашому браузері — достатньо ввести один раз.</span>
+                    </span>
+                </label>
+                <input type="text" id="subdivision" placeholder="напр., РР" oninput="saveOwner()">
+            </div>
+            <div class="form-group col">
+                <label>Військова частина:</label>
+                <input type="text" id="unit" placeholder="напр., 95 одшбр" oninput="saveOwner()">
+            </div>
+        </div>
+
         <div class="button-group">
             <button type="submit" class="btn-primary">Згенерувати подання</button>
             <button type="button" class="btn-secondary" onclick="resetForm()">Нове подання</button>
@@ -889,14 +904,27 @@
             updateTimeDisplay();
 
             updateBattery();
+            loadOwner();
+        }
+
+        // Підрозділ і військова частина — зберігаються локально (localStorage)
+        function saveOwner() {
+            localStorage.setItem('subdivision', document.getElementById('subdivision').value);
+            localStorage.setItem('unit', document.getElementById('unit').value);
+        }
+        function loadOwner() {
+            const s = localStorage.getItem('subdivision');
+            const u = localStorage.getItem('unit');
+            if (s !== null) document.getElementById('subdivision').value = s;
+            if (u !== null) document.getElementById('unit').value = u;
         }
 
         document.addEventListener("DOMContentLoaded", setDateTimeAndBattery);
 
         function resetForm() {
-            document.getElementById("generatorForm").reset(); 
-            document.getElementById("outputText").value = ""; 
-            setDateTimeAndBattery(); 
+            document.getElementById("generatorForm").reset();
+            document.getElementById("outputText").value = "";
+            setDateTimeAndBattery();
             updateBattery();
         }
 
@@ -939,11 +967,16 @@
             const unitType = document.getElementById("unitType").value;
             const batteryType = document.getElementById("batteryType").value;
 
+            const subdivision = document.getElementById("subdivision").value.trim();
+            const unit = document.getElementById("unit").value.trim();
+            const ownerName = [subdivision, unit].filter(Boolean).join(' ');
+            const owner = ownerName ? ` ${ownerName}` : '';
+
             const isFlyeye = droneType.includes("FLYEYE");
 
             const result = isFlyeye
-                ? `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно РР 95 одшбр, а саме: БпЛА ${droneType} № ${propNumber} – 1 ${unitType} (СА та ППО).`
-                : `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно РР 95 одшбр, а саме: БпЛА ${droneType} № ${propNumber} з акумуляторною батареєю ${batteryType} – 1 ${unitType} (СА та ППО).`;
+                ? `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно${owner}, а саме: БпЛА ${droneType} № ${propNumber} – 1 ${unitType} (СА та ППО).`
+                : `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно${owner}, а саме: БпЛА ${droneType} № ${propNumber} з акумуляторною батареєю ${batteryType} – 1 ${unitType} (СА та ППО).`;
 
             document.getElementById("outputText").value = result;
             document.getElementById("outputText").scrollIntoView({ behavior: "smooth", block: "nearest" });
