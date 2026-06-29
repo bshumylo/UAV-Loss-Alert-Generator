@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор подання про втрату</title>
+    <style>
+        /* Змінні кольорів для світлої та темної тем */
+        :root {
+            --font-main: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --primary-color: #4CAF50;
+            --secondary-color: #757575;
+            
+            /* Світла тема (за замовчуванням) */
+            --bg-color: #f4f4f9;
+            --text-color: #333333;
+            --input-bg: #ffffff;
+            --input-border: #cccccc;
+            --result-bg: #e7f3fe;
+            --result-border: #2196F3;
+            --tooltip-bg: #333333;
+            --tooltip-text: #ffffff;
+        }
+
+        /* Темна тема */
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --input-bg: #2d2d2d;
+            --input-border: #555555;
+            --result-bg: #1e2a38;
+            --result-border: #3498db;
+            --tooltip-bg: #555555;
+            --tooltip-text: #eeeeee;
+        }
+        
+        body { 
+            font-family: var(--font-main); 
+            padding: 20px; 
+            max-width: 650px; 
+            margin: auto; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .header-row h2 {
+            margin: 0;
+        }
+
+        .header-row select {
+            width: auto;
+            padding: 5px 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+            border: none;
+            background-color: transparent;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .col-small {
+            flex: 0.5;
+            min-width: 100px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: 600; 
+            font-size: 14px; 
+        }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            border: 1px solid var(--input-border); 
+            border-radius: 6px; 
+            font-family: var(--font-main);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, opacity 0.3s;
+        }
+        
+        input[type="date"], input[type="time"], select { cursor: pointer; }
+        input[type="text"] { cursor: text; }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button { 
+            flex: 1;
+            min-width: 200px;
+            color: white; 
+            padding: 12px 15px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: #45a049; }
+        
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover { background-color: #5a5a5a; }
+        
+        .result-box { 
+            margin-top: 25px; 
+            padding: 15px; 
+            background-color: var(--result-bg); 
+            border-left: 6px solid var(--result-border); 
+            border-radius: 4px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .tooltip-icon {
+            cursor: help;
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 14px;
+        }
+
+        .tooltip-icon .tooltiptext {
+            visibility: hidden;
+            width: 280px;
+            background-color: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 150%;
+            left: 50%;
+            margin-left: -140px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.4;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .tooltip-icon .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--tooltip-bg) transparent transparent transparent;
+        }
+
+        .tooltip-icon:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .dropdown-popup {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 50;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+            padding: 10px;
+            margin-top: 4px;
+        }
+
+        .dropdown-popup.open { display: block; }
+
+        #calendarPopup { width: 260px; }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .cal-header button {
+            flex: none;
+            min-width: auto;
+            background: none;
+            color: var(--text-color);
+            font-size: 16px;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .cal-header button:hover { background-color: var(--result-bg); }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .cal-grid .cal-dow {
+            font-weight: 600;
+            color: var(--secondary-color);
+            padding: 4px 0;
+        }
+
+        .cal-grid .cal-day {
+            padding: 6px 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cal-grid .cal-day:hover { background-color: var(--result-bg); }
+        .cal-grid .cal-day.cal-empty { cursor: default; }
+        .cal-grid .cal-day.cal-empty:hover { background-color: transparent; }
+        .cal-grid .cal-day.cal-selected { background-color: var(--primary-color); color: white; }
+        .cal-grid .cal-day.cal-today { border: 1px solid var(--primary-color); }
+
+        .time-popup {
+            display: none;
+            flex-direction: row;
+            gap: 10px;
+            width: 140px;
+        }
+
+        .time-popup.open { display: flex; }
+
+        .time-col { flex: 1; text-align: center; }
+
+        .time-col-label {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--secondary-color);
+            margin-bottom: 4px;
+        }
+
+        .time-list {
+            max-height: 160px;
+            overflow-y: auto;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+        }
+
+        .time-list .time-item {
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .time-list .time-item:hover { background-color: var(--result-bg); }
+        .time-list .time-item.time-selected { background-color: var(--primary-color); color: white; }
+
+        .footer-note {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--input-border);
+            text-align: center;
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+
+        .geo-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 12px;
+            min-height: 18px;
+            transition: color 0.3s;
+        }
+
+        .geo-status.loading { color: var(--secondary-color); }
+        .geo-status.ok { color: #4CAF50; }
+        .geo-status.err { color: #e53935; }
+
+        .geo-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--input-border);
+            border-top-color: var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="header-row">
+        <h2>Генератор подання на втрату БпЛА</h2>
+        <select id="themeSelect" onchange="setTheme(this.value)">
+            <option value="auto">🌓 </option>
+            <option value="light">☀️ </option>
+            <option value="dark">🌙 </option>
+        </select>
+    </div>
+
+    <form id="generatorForm" onsubmit="event.preventDefault(); generateText();">
+
+        <div class="row">
+            <div class="form-group col" style="position: relative;">
+                <label>Дата:</label>
+                <input type="text" id="dateDisplay" readonly placeholder="дд.мм.рррр" onclick="toggleCalendar()">
+                <div id="calendarPopup" class="dropdown-popup"></div>
+            </div>
+            <div class="form-group col" style="position: relative;">
+                <label>Час:</label>
+                <input type="text" id="timeDisplay" readonly placeholder="гг:хх" onclick="toggleTimePicker()">
+                <div id="timePopup" class="dropdown-popup time-popup">
+                    <div class="time-col">
+                        <div class="time-col-label">Год</div>
+                        <div id="hoursList" class="time-list"></div>
+                    </div>
+                    <div class="time-col">
+                        <div class="time-col-label">Хв</div>
+                        <div id="minutesList" class="time-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Тип завдання:</label>
+            <select id="missionType" required>
+                <option value="під час розвідувального польоту">під час розвідувального польоту</option>
+                <option value="під час бойового вильоту">під час бойового вильоту</option>
+                <option value="під час нанесення бойового ураження">під час нанесення бойового ураження</option>
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="form-group col">
+                <label>Населений пункт, область (через кому):</label>
+                <input type="text" id="location" placeholder="Роботине, Запорізької області" required>
+                <div id="geoStatus" class="geo-status"></div>
+            </div>
+
+            <div class="form-group col">
+                <label>Координата (MGRS):
+                    <span class="tooltip-icon" style="float:right;">ℹ️
+                        <span class="tooltiptext">Введіть MGRS-координату — населений пункт та область підставляться автоматично.</span>
+                    </span>
+                </label>
+                <input type="text" id="coords" placeholder="36U YA 12345 67890" required
+                       oninput="onCoordsInput(this.value)">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Причина втрати:</label>
+            <select id="reason" required>
+                <option value="внаслідок дії засобів РЕБ противника">внаслідок дії засобів РЕБ противника</option>
+                <option value="внаслідок обстрілу зі стрілецької зброї противником">внаслідок обстрілу зі стрілецької зброї противником</option>
+                <option value="внаслідок дії ППО противника">внаслідок дії ППО противника</option>
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="form-group col">
+                <label>Тип БпЛА:</label>
+                <select id="droneType" onchange="updateBattery()" required>
+                    <option value="DJI Mavic 3">DJI Mavic 3</option>
+                    <option value="DJI Mavic 3 TA">DJI Mavic 3 TA</option>
+                    <option value="DJI Mavic 3 Thermal">DJI Mavic 3 Thermal</option>
+                    <option value="DJI Mavic 3 Enterprise">DJI Mavic 3 Enterprise</option>
+                    <option value="DJI Mavic 3 PRO">DJI Mavic 3 PRO</option>
+                    <option value="DJI Mavic 3 Classic">DJI Mavic 3 Classic</option>
+                    <option value="DJI Mavic 3 Fly More Combo">DJI Mavic 3 Fly More Combo</option>
+                    <option value="DJI Matrice 4Т">DJI Matrice 4Т</option>
+                    <option value="DJI Matrice 4E">DJI Matrice 4E</option>
+                    <option value="Autel EVO MAX 4T">Autel EVO MAX 4T</option>
+                    <option value="FLYEYE 3.0 (UA)">FLYEYE 3.0 (UA)</option>
+                </select>
+            </div>
+            
+            <div class="form-group col">
+                <label>Номер БпЛА:
+            <span class="tooltip-icon" style="float: right;">ℹ️
+                        <span class="tooltiptext">
+                            - Номер дрона брати з бокса. При отриманні на складі служби, звіряти номер бокса та дрона!<br><br>
+                            - Не подавати дрони, що не стали на облік. Доповідати тільки після постановки на облік.
+                        </span>
+                    </span>
+                </label>
+                <input type="text" id="propNumber" placeholder="1581..." required>
+            </div>
+
+            <div class="form-group col-small">
+                <label>Одиниця:
+            <span class="tooltip-icon" style="float: right;">ℹ️
+                        <span class="tooltiptext">
+                            - Якщо дрон на обліку як 1 "к-т" і був втрачений в польоті то доповідаємо 1 шт.<br><br>
+                            - Якщо дрон на обліку як 1 од. і був втрачений в польоті то доповідаємо 1 "од."<br><br>
+                            - Якщо дрон на обліку як 1 шт. і був втрачений в польоті то доповідаємо 1 "шт."<br><br>
+                            - FLYEYE також подається як "шт."<br>
+                            ---<br>
+                            У дронів що на обліку як 1 к-т залишаються комплектуючі, їх необхідно облікувати і подавати на втрату окремо.
+                        </span>
+                    </span>
+                </label>
+                <select id="unitType" required>
+                    <option value="шт.">шт.</option>
+                    <option value="од.">од.</option>
+                    <option value="к-т">к-т</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>АКБ до БпЛА:</label>
+            <input type="text" id="batteryType" placeholder="Flight Battery">
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn-primary">Згенерувати подання</button>
+            <button type="button" class="btn-secondary" onclick="resetForm()">Нове подання</button>
+        </div>
+
+    </form>
+
+    <div class="result-box">
+        <label>Готове подання:
+            <span class="tooltip-icon" style="float: right;">ℹ️
+                <span class="tooltiptext">Не придумувати нічого свого. Копіювати зі зразка!</span>
+            </span>
+        </label>
+        <textarea id="outputText" rows="5" readonly></textarea>
+        <button onclick="copyText()" style="margin-top: 10px; background-color: #008CBA; width: 100%;">Копіювати в буфер</button>
+    </div>
+
+    <footer class="footer-note">
+        © Ліцензія MIT — можна вільно використовувати, копіювати та змінювати цей код у власних проєктах.
+    </footer>
+
+    <script>
+    /* ── mgrs.js (вбудовано) ─────────────────────────────────────────────── */
+    (function (global, factory) {
+    	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    	(factory((global.mgrs = global.mgrs || {})));
+    }(this, (function (exports) { 'use strict';
+    var NUM_100K_SETS = 6;
+    var SET_ORIGIN_COLUMN_LETTERS = 'AJSAJS';
+    var SET_ORIGIN_ROW_LETTERS = 'AFAFAF';
+    var A = 65; var I = 73; var O = 79; var V = 86; var Z = 90;
+    var mgrs = { forward: forward, inverse: inverse, toPoint: toPoint };
+    function forward(ll, accuracy) {
+      accuracy = accuracy || 5;
+      return encode(LLtoUTM({ lat: ll[1], lon: ll[0] }), accuracy);
+    }
+    function inverse(mgrs) {
+      var bbox = UTMtoLL(decode(mgrs.toUpperCase()));
+      if (bbox.lat && bbox.lon) return [bbox.lon, bbox.lat, bbox.lon, bbox.lat];
+      return [bbox.left, bbox.bottom, bbox.right, bbox.top];
+    }
+    function toPoint(mgrs) {
+      var bbox = UTMtoLL(decode(mgrs.toUpperCase()));
+      if (bbox.lat && bbox.lon) return [bbox.lon, bbox.lat];
+      return [(bbox.left + bbox.right) / 2, (bbox.top + bbox.bottom) / 2];
+    }
+    function degToRad(deg) { return (deg * (Math.PI / 180.0)); }
+    function radToDeg(rad) { return (180.0 * (rad / Math.PI)); }
+    function LLtoUTM(ll) {
+      var Lat = ll.lat, Long = ll.lon, a = 6378137.0, eccSquared = 0.00669438, k0 = 0.9996;
+      var LongOrigin, eccPrimeSquared, N, T, C, A, M;
+      var LatRad = degToRad(Lat), LongRad = degToRad(Long), LongOriginRad, ZoneNumber;
+      ZoneNumber = Math.floor((Long + 180) / 6) + 1;
+      if (Long === 180) ZoneNumber = 60;
+      if (Lat >= 56.0 && Lat < 64.0 && Long >= 3.0 && Long < 12.0) ZoneNumber = 32;
+      if (Lat >= 72.0 && Lat < 84.0) {
+        if (Long >= 0.0 && Long < 9.0) ZoneNumber = 31;
+        else if (Long >= 9.0 && Long < 21.0) ZoneNumber = 33;
+        else if (Long >= 21.0 && Long < 33.0) ZoneNumber = 35;
+        else if (Long >= 33.0 && Long < 42.0) ZoneNumber = 37;
+      }
+      LongOrigin = (ZoneNumber - 1) * 6 - 180 + 3;
+      LongOriginRad = degToRad(LongOrigin);
+      eccPrimeSquared = (eccSquared) / (1 - eccSquared);
+      N = a / Math.sqrt(1 - eccSquared * Math.sin(LatRad) * Math.sin(LatRad));
+      T = Math.tan(LatRad) * Math.tan(LatRad);
+      C = eccPrimeSquared * Math.cos(LatRad) * Math.cos(LatRad);
+      A = Math.cos(LatRad) * (LongRad - LongOriginRad);
+      M = a * ((1 - eccSquared / 4 - 3 * eccSquared * eccSquared / 64 - 5 * eccSquared * eccSquared * eccSquared / 256) * LatRad - (3 * eccSquared / 8 + 3 * eccSquared * eccSquared / 32 + 45 * eccSquared * eccSquared * eccSquared / 1024) * Math.sin(2 * LatRad) + (15 * eccSquared * eccSquared / 256 + 45 * eccSquared * eccSquared * eccSquared / 1024) * Math.sin(4 * LatRad) - (35 * eccSquared * eccSquared * eccSquared / 3072) * Math.sin(6 * LatRad));
+      var UTMEasting = (k0 * N * (A + (1 - T + C) * A * A * A / 6.0 + (5 - 18 * T + T * T + 72 * C - 58 * eccPrimeSquared) * A * A * A * A * A / 120.0) + 500000.0);
+      var UTMNorthing = (k0 * (M + N * Math.tan(LatRad) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A * A * A * A / 24.0 + (61 - 58 * T + T * T + 600 * C - 330 * eccPrimeSquared) * A * A * A * A * A * A / 720.0)));
+      if (Lat < 0.0) UTMNorthing += 10000000.0;
+      return { northing: Math.round(UTMNorthing), easting: Math.round(UTMEasting), zoneNumber: ZoneNumber, zoneLetter: getLetterDesignator(Lat) };
+    }
+    function UTMtoLL(utm) {
+      var UTMNorthing = utm.northing, UTMEasting = utm.easting, zoneLetter = utm.zoneLetter, zoneNumber = utm.zoneNumber;
+      if (zoneNumber < 0 || zoneNumber > 60) return null;
+      var k0 = 0.9996, a = 6378137.0, eccSquared = 0.00669438, eccPrimeSquared;
+      var e1 = (1 - Math.sqrt(1 - eccSquared)) / (1 + Math.sqrt(1 - eccSquared));
+      var N1, T1, C1, R1, D, M, LongOrigin, mu, phi1Rad;
+      var x = UTMEasting - 500000.0, y = UTMNorthing;
+      if (zoneLetter < 'N') y -= 10000000.0;
+      LongOrigin = (zoneNumber - 1) * 6 - 180 + 3;
+      eccPrimeSquared = (eccSquared) / (1 - eccSquared);
+      M = y / k0;
+      mu = M / (a * (1 - eccSquared / 4 - 3 * eccSquared * eccSquared / 64 - 5 * eccSquared * eccSquared * eccSquared / 256));
+      phi1Rad = mu + (3 * e1 / 2 - 27 * e1 * e1 * e1 / 32) * Math.sin(2 * mu) + (21 * e1 * e1 / 16 - 55 * e1 * e1 * e1 * e1 / 32) * Math.sin(4 * mu) + (151 * e1 * e1 * e1 / 96) * Math.sin(6 * mu);
+      N1 = a / Math.sqrt(1 - eccSquared * Math.sin(phi1Rad) * Math.sin(phi1Rad));
+      T1 = Math.tan(phi1Rad) * Math.tan(phi1Rad);
+      C1 = eccPrimeSquared * Math.cos(phi1Rad) * Math.cos(phi1Rad);
+      R1 = a * (1 - eccSquared) / Math.pow(1 - eccSquared * Math.sin(phi1Rad) * Math.sin(phi1Rad), 1.5);
+      D = x / (N1 * k0);
+      var lat = phi1Rad - (N1 * Math.tan(phi1Rad) / R1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * eccPrimeSquared) * D * D * D * D / 24 + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * eccPrimeSquared - 3 * C1 * C1) * D * D * D * D * D * D / 720);
+      lat = radToDeg(lat);
+      var lon = (D - (1 + 2 * T1 + C1) * D * D * D / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * eccPrimeSquared + 24 * T1 * T1) * D * D * D * D * D / 120) / Math.cos(phi1Rad);
+      lon = LongOrigin + radToDeg(lon);
+      var result;
+      if (utm.accuracy) {
+        var topRight = UTMtoLL({ northing: utm.northing + utm.accuracy, easting: utm.easting + utm.accuracy, zoneLetter: utm.zoneLetter, zoneNumber: utm.zoneNumber });
+        result = { top: topRight.lat, right: topRight.lon, bottom: lat, left: lon };
+      } else {
+        result = { lat: lat, lon: lon };
+      }
+      return result;
+    }
+    function getLetterDesignator(lat) {
+      var ld = 'Z';
+      if      (84 >= lat && lat >= 72) ld = 'X';
+      else if (72 > lat && lat >= 64)  ld = 'W';
+      else if (64 > lat && lat >= 56)  ld = 'V';
+      else if (56 > lat && lat >= 48)  ld = 'U';
+      else if (48 > lat && lat >= 40)  ld = 'T';
+      else if (40 > lat && lat >= 32)  ld = 'S';
+      else if (32 > lat && lat >= 24)  ld = 'R';
+      else if (24 > lat && lat >= 16)  ld = 'Q';
+      else if (16 > lat && lat >= 8)   ld = 'P';
+      else if (8  > lat && lat >= 0)   ld = 'N';
+      else if (0  > lat && lat >= -8)  ld = 'M';
+      else if (-8 > lat && lat >= -16) ld = 'L';
+      else if (-16> lat && lat >= -24) ld = 'K';
+      else if (-24> lat && lat >= -32) ld = 'J';
+      else if (-32> lat && lat >= -40) ld = 'H';
+      else if (-40> lat && lat >= -48) ld = 'G';
+      else if (-48> lat && lat >= -56) ld = 'F';
+      else if (-56> lat && lat >= -64) ld = 'E';
+      else if (-64> lat && lat >= -72) ld = 'D';
+      else if (-72> lat && lat >= -80) ld = 'C';
+      return ld;
+    }
+    function encode(utm, accuracy) {
+      var seasting = "00000" + utm.easting, snorthing = "00000" + utm.northing;
+      return utm.zoneNumber + utm.zoneLetter + get100kID(utm.easting, utm.northing, utm.zoneNumber) + seasting.substr(seasting.length - 5, accuracy) + snorthing.substr(snorthing.length - 5, accuracy);
+    }
+    function get100kID(easting, northing, zoneNumber) {
+      var setParm = get100kSetForZone(zoneNumber);
+      return getLetter100kID(Math.floor(easting / 100000), Math.floor(northing / 100000) % 20, setParm);
+    }
+    function get100kSetForZone(i) {
+      var setParm = i % NUM_100K_SETS;
+      return setParm === 0 ? NUM_100K_SETS : setParm;
+    }
+    function getLetter100kID(column, row, parm) {
+      var index = parm - 1;
+      var colOrigin = SET_ORIGIN_COLUMN_LETTERS.charCodeAt(index);
+      var rowOrigin = SET_ORIGIN_ROW_LETTERS.charCodeAt(index);
+      var colInt = colOrigin + column - 1, rowInt = rowOrigin + row, rollover = false;
+      if (colInt > Z) { colInt = colInt - Z + A - 1; rollover = true; }
+      if (colInt === I || (colOrigin < I && colInt > I) || ((colInt > I || colOrigin < I) && rollover)) colInt++;
+      if (colInt === O || (colOrigin < O && colInt > O) || ((colInt > O || colOrigin < O) && rollover)) { colInt++; if (colInt === I) colInt++; }
+      if (colInt > Z) colInt = colInt - Z + A - 1;
+      if (rowInt > V) { rowInt = rowInt - V + A - 1; rollover = true; } else rollover = false;
+      if (((rowInt === I) || ((rowOrigin < I) && (rowInt > I))) || (((rowInt > I) || (rowOrigin < I)) && rollover)) rowInt++;
+      if (((rowInt === O) || ((rowOrigin < O) && (rowInt > O))) || (((rowInt > O) || (rowOrigin < O)) && rollover)) { rowInt++; if (rowInt === I) rowInt++; }
+      if (rowInt > V) rowInt = rowInt - V + A - 1;
+      return String.fromCharCode(colInt) + String.fromCharCode(rowInt);
+    }
+    function decode(mgrsString) {
+      if (mgrsString && mgrsString.length === 0) throw ("MGRSPoint coverting from nothing");
+      var length = mgrsString.length, hunK = null, sb = "", testChar, i = 0;
+      while (!(/[A-Z]/).test(testChar = mgrsString.charAt(i))) {
+        if (i >= 2) throw ("MGRSPoint bad conversion from: " + mgrsString);
+        sb += testChar; i++;
+      }
+      var zoneNumber = parseInt(sb, 10);
+      if (i === 0 || i + 3 > length) throw ("MGRSPoint bad conversion from: " + mgrsString);
+      var zoneLetter = mgrsString.charAt(i++);
+      if (zoneLetter <= 'A' || zoneLetter === 'B' || zoneLetter === 'Y' || zoneLetter >= 'Z' || zoneLetter === 'I' || zoneLetter === 'O')
+        throw ("MGRSPoint zone letter " + zoneLetter + " not handled: " + mgrsString);
+      hunK = mgrsString.substring(i, i += 2);
+      var set = get100kSetForZone(zoneNumber);
+      var east100k = getEastingFromChar(hunK.charAt(0), set);
+      var north100k = getNorthingFromChar(hunK.charAt(1), set);
+      while (north100k < getMinNorthing(zoneLetter)) north100k += 2000000;
+      var remainder = length - i;
+      if (remainder % 2 !== 0) throw ("MGRSPoint has to have an even number of digits after the zone letter and two 100km letters" + mgrsString);
+      var sep = remainder / 2, sepEasting = 0.0, sepNorthing = 0.0, accuracyBonus, sepEastingString, sepNorthingString, easting, northing;
+      if (sep > 0) {
+        accuracyBonus = 100000.0 / Math.pow(10, sep);
+        sepEastingString = mgrsString.substring(i, i + sep);
+        sepEasting = parseFloat(sepEastingString) * accuracyBonus;
+        sepNorthingString = mgrsString.substring(i + sep);
+        sepNorthing = parseFloat(sepNorthingString) * accuracyBonus;
+      }
+      easting = sepEasting + east100k; northing = sepNorthing + north100k;
+      return { easting: easting, northing: northing, zoneLetter: zoneLetter, zoneNumber: zoneNumber, accuracy: accuracyBonus };
+    }
+    function getEastingFromChar(e, set) {
+      var curCol = SET_ORIGIN_COLUMN_LETTERS.charCodeAt(set - 1), eastingValue = 100000.0, rewindMarker = false;
+      while (curCol !== e.charCodeAt(0)) {
+        curCol++;
+        if (curCol === I) curCol++;
+        if (curCol === O) curCol++;
+        if (curCol > Z) { if (rewindMarker) throw ("Bad character: " + e); curCol = A; rewindMarker = true; }
+        eastingValue += 100000.0;
+      }
+      return eastingValue;
+    }
+    function getNorthingFromChar(n, set) {
+      if (n > 'V') throw ("MGRSPoint given invalid Northing " + n);
+      var curRow = SET_ORIGIN_ROW_LETTERS.charCodeAt(set - 1), northingValue = 0.0, rewindMarker = false;
+      while (curRow !== n.charCodeAt(0)) {
+        curRow++;
+        if (curRow === I) curRow++;
+        if (curRow === O) curRow++;
+        if (curRow > V) { if (rewindMarker) throw ("Bad character: " + n); curRow = A; rewindMarker = true; }
+        northingValue += 100000.0;
+      }
+      return northingValue;
+    }
+    function getMinNorthing(zoneLetter) {
+      var northing;
+      switch (zoneLetter) {
+        case 'C': northing=1100000.0; break; case 'D': northing=2000000.0; break;
+        case 'E': northing=2800000.0; break; case 'F': northing=3700000.0; break;
+        case 'G': northing=4600000.0; break; case 'H': northing=5500000.0; break;
+        case 'J': northing=6400000.0; break; case 'K': northing=7300000.0; break;
+        case 'L': northing=8200000.0; break; case 'M': northing=9100000.0; break;
+        case 'N': northing=0.0;       break; case 'P': northing=800000.0;  break;
+        case 'Q': northing=1700000.0; break; case 'R': northing=2600000.0; break;
+        case 'S': northing=3500000.0; break; case 'T': northing=4400000.0; break;
+        case 'U': northing=5300000.0; break; case 'V': northing=6200000.0; break;
+        case 'W': northing=7000000.0; break; case 'X': northing=7900000.0; break;
+        default:  northing=-1.0;
+      }
+      if (northing >= 0.0) return northing;
+      throw ("Invalid zone letter: " + zoneLetter);
+    }
+    exports['default'] = mgrs; exports.forward = forward; exports.inverse = inverse; exports.toPoint = toPoint;
+    Object.defineProperty(exports, '__esModule', { value: true });
+    })));
+    /* ── кінець mgrs.js ──────────────────────────────────────────────────── */
+    </script>
+    <script>
+        function applyTheme(theme) {
+            if (theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+
+        function setTheme(theme) {
+            localStorage.setItem('appTheme', theme);
+            applyTheme(theme);
+        }
+
+        const savedTheme = localStorage.getItem('appTheme') || 'auto';
+        document.getElementById('themeSelect').value = savedTheme;
+        applyTheme(savedTheme);
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (localStorage.getItem('appTheme') === 'auto' || !localStorage.getItem('appTheme')) {
+                applyTheme('auto');
+            }
+        });
+
+        const UA_MONTHS_NOM = ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"];
+        const UA_DOW = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
+
+        let selectedDate = new Date();
+        let calendarViewDate = new Date();
+        let selectedHour = String(new Date().getHours()).padStart(2, '0');
+        let selectedMinute = String(new Date().getMinutes()).padStart(2, '0');
+
+        function pad2(n) { return String(n).padStart(2, '0'); }
+
+        function formatDateUA(d) {
+            return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
+        }
+
+        function isSameDay(a, b) {
+            return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+        }
+
+        function renderCalendar() {
+            const popup = document.getElementById("calendarPopup");
+            const year = calendarViewDate.getFullYear();
+            const month = calendarViewDate.getMonth();
+
+            let html = `<div class="cal-header">
+                <button type="button" onclick="changeMonth(-1)">‹</button>
+                <span>${UA_MONTHS_NOM[month]} ${year}</span>
+                <button type="button" onclick="changeMonth(1)">›</button>
+            </div>`;
+
+            html += `<div class="cal-grid">`;
+            UA_DOW.forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+
+            const firstDay = new Date(year, month, 1);
+            let startOffset = (firstDay.getDay() + 6) % 7;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            for (let i = 0; i < startOffset; i++) {
+                html += `<div class="cal-day cal-empty"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const current = new Date(year, month, day);
+                let classes = "cal-day";
+                if (isSameDay(current, selectedDate)) classes += " cal-selected";
+                if (isSameDay(current, today)) classes += " cal-today";
+                html += `<div class="${classes}" onclick="selectDay(${day})">${day}</div>`;
+            }
+
+            html += `</div>`;
+            popup.innerHTML = html;
+        }
+
+        function changeMonth(delta) {
+            calendarViewDate.setMonth(calendarViewDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function selectDay(day) {
+            selectedDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth(), day);
+            document.getElementById("dateDisplay").value = formatDateUA(selectedDate);
+            renderCalendar();
+            closeAllPopups();
+        }
+
+        function toggleCalendar() {
+            const popup = document.getElementById("calendarPopup");
+            const isOpen = popup.classList.contains("open");
+            closeAllPopups();
+            if (!isOpen) {
+                calendarViewDate = new Date(selectedDate);
+                renderCalendar();
+                popup.classList.add("open");
+            }
+        }
+
+        function renderTimeLists() {
+            const hoursList = document.getElementById("hoursList");
+            const minutesList = document.getElementById("minutesList");
+
+            let hoursHtml = "";
+            for (let h = 0; h < 24; h++) {
+                const hv = pad2(h);
+                hoursHtml += `<div class="time-item${hv === selectedHour ? ' time-selected' : ''}" onclick="selectHour('${hv}')">${hv}</div>`;
+            }
+            hoursList.innerHTML = hoursHtml;
+
+            let minutesHtml = "";
+            for (let m = 0; m < 60; m += 5) {
+                const mv = pad2(m);
+                minutesHtml += `<div class="time-item${mv === selectedMinute ? ' time-selected' : ''}" onclick="selectMinute('${mv}')">${mv}</div>`;
+            }
+            minutesList.innerHTML = minutesHtml;
+        }
+
+        function updateTimeDisplay() {
+            document.getElementById("timeDisplay").value = `${selectedHour}:${selectedMinute}`;
+        }
+
+        function selectHour(h) {
+            selectedHour = h;
+            updateTimeDisplay();
+            renderTimeLists();
+        }
+
+        function selectMinute(m) {
+            selectedMinute = m;
+            updateTimeDisplay();
+            renderTimeLists();
+        }
+
+        function toggleTimePicker() {
+            const popup = document.getElementById("timePopup");
+            const isOpen = popup.classList.contains("open");
+            closeAllPopups();
+            if (!isOpen) {
+                renderTimeLists();
+                popup.classList.add("open");
+            }
+        }
+
+        function closeAllPopups() {
+            document.getElementById("calendarPopup").classList.remove("open");
+            document.getElementById("timePopup").classList.remove("open");
+        }
+
+        document.addEventListener("click", function(e) {
+            const dateField = document.getElementById("dateDisplay");
+            const timeField = document.getElementById("timeDisplay");
+            const calPopup = document.getElementById("calendarPopup");
+            const timePopup = document.getElementById("timePopup");
+
+            if (!dateField.contains(e.target) && !calPopup.contains(e.target) &&
+                !timeField.contains(e.target) && !timePopup.contains(e.target)) {
+                closeAllPopups();
+            }
+        });
+
+        function updateBattery() {
+            const drone = document.getElementById("droneType").value;
+            const batteryInput = document.getElementById("batteryType");
+            const unitSelect = document.getElementById("unitType");
+            
+            // За замовчуванням поле активне
+            batteryInput.disabled = false;
+            batteryInput.style.opacity = "1";
+
+            if (drone.includes("Mavic 3")) {
+                batteryInput.value = "DJI Intelligent Flight Battery for Mavic";
+                unitSelect.value = "шт.";
+            } else if (drone.includes("Matrice")) {
+                batteryInput.value = "DJI Matrice 4 Series";
+                unitSelect.value = "шт.";
+            } else if (drone.includes("Autel")) {
+                batteryInput.value = "Autel EVO Max 4T Battery";
+                unitSelect.value = "шт.";
+            } else if (drone.includes("FLYEYE")) {
+                batteryInput.value = "";
+                batteryInput.disabled = true;
+                batteryInput.style.opacity = "0.5";
+                unitSelect.value = "шт.";
+            } else {
+                batteryInput.value = "";
+                unitSelect.value = "шт.";
+            }
+        }
+
+        function setDateTimeAndBattery() {
+            selectedDate = new Date();
+            calendarViewDate = new Date(selectedDate);
+            document.getElementById("dateDisplay").value = formatDateUA(selectedDate);
+
+            selectedHour = pad2(selectedDate.getHours());
+            selectedMinute = pad2(selectedDate.getMinutes());
+            updateTimeDisplay();
+
+            updateBattery();
+        }
+
+        document.addEventListener("DOMContentLoaded", setDateTimeAndBattery);
+
+        function resetForm() {
+            document.getElementById("generatorForm").reset(); 
+            document.getElementById("outputText").value = ""; 
+            setDateTimeAndBattery(); 
+            updateBattery();
+        }
+
+        function generateText() {
+            let rawStr = document.getElementById("coords").value.trim().toUpperCase();
+
+            const cyrillicToLatinMap = {
+                'А': 'A', 'В': 'B', 'С': 'C', 'Е': 'E', 'Н': 'H', 'І': 'I', 'К': 'K', 'М': 'M', 'О': 'O', 'Р': 'P', 'Т': 'T', 'Х': 'X', 'У': 'U' 
+            };
+
+            const coordsStr = rawStr.replace(/[АВСЕНІКМОРТХУ]/g, function(match) {
+                return cyrillicToLatinMap[match];
+            });
+
+            // Вимагаємо MGRS з однаковою кількістю цифр по обидві сторони (наприклад, 5 і 5, 4 і 4)
+            const mgrsRegex = /^(36[TUV]|37[TU])\s?[A-Z]{2}\s?((\d)\s?(\d)|(\d{2})\s?(\d{2})|(\d{3})\s?(\d{3})|(\d{4})\s?(\d{4})|(\d{5})\s?(\d{5}))$/;
+            
+            if (!mgrsRegex.test(coordsStr)) {
+                alert("Помилка! Координати мають бути у форматі MGRS з однаковою кількістю цифр, та знаходитись у вказаних областях (зони 36T, 36U, 36V, 37T, 37U).\nНаприклад: 36U YA 12345 67890");
+                return; 
+            }
+
+            const date = formatDateUA(selectedDate);
+
+            const rawLocation = document.getElementById("location").value.trim();
+            let finalLocation = rawLocation;
+            const locParts = rawLocation.split(',');
+            
+            if (locParts.length > 1) {
+                finalLocation = locParts[0].toUpperCase() + ',' + locParts.slice(1).join(',');
+            } else {
+                finalLocation = rawLocation.toUpperCase();
+            }
+
+            const time = `${selectedHour}:${selectedMinute}`;
+            const missionType = document.getElementById("missionType").value;
+            const reason = document.getElementById("reason").value;
+            const droneType = document.getElementById("droneType").value;
+            const propNumber = document.getElementById("propNumber").value;
+            const unitType = document.getElementById("unitType").value;
+            const batteryType = document.getElementById("batteryType").value;
+
+            const isFlyeye = droneType.includes("FLYEYE");
+
+            const result = isFlyeye
+                ? `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно РР 95 одшбр, а саме: БпЛА ${droneType} № ${propNumber} – 1 ${unitType} (СА та ППО).`
+                : `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно РР 95 одшбр, а саме: БпЛА ${droneType} № ${propNumber} з акумуляторною батареєю ${batteryType} – 1 ${unitType} (СА та ППО).`;
+
+            document.getElementById("outputText").value = result;
+            document.getElementById("outputText").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        function copyText() {
+            const textToCopy = document.getElementById("outputText");
+            if (textToCopy.value === "") {
+                alert("Спочатку згенеруйте текст подання!");
+                return;
+            }
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy.value).then(() => {
+                    alert("Текст скопійовано! Можете вставляти в документ або месенджер.");
+                }).catch(() => {
+                    textToCopy.select();
+                    document.execCommand("copy");
+                    alert("Текст скопійовано!");
+                });
+            } else {
+                textToCopy.select();
+                document.execCommand("copy");
+                alert("Текст скопійовано!");
+            }
+        }
+
+        /* ── MGRS → геокодування (офлайн + онлайн) ──────────────────────── */
+
+        // Родовий відмінок для коротких назв з settlements.json (без слова "область")
+        const OBLAST_SHORT_MAP = {
+            'Запорізька':       'Запорізької області',
+            'Донецька':         'Донецької області',
+            'Дніпропетровська': 'Дніпропетровської області',
+            'Херсонська':       'Херсонської області',
+            'Луганська':        'Луганської області',
+            'Харківська':       'Харківської області',
+            'Миколаївська':     'Миколаївської області',
+            'Одеська':          'Одеської області',
+            'Київська':         'Київської області',
+            'Сумська':          'Сумської області',
+            'Чернігівська':     'Чернігівської області',
+            'Полтавська':       'Полтавської області',
+            'Черкаська':        'Черкаської області',
+            'Кіровоградська':   'Кіровоградської області',
+            'Вінницька':        'Вінницької області',
+            'Хмельницька':      'Хмельницької області',
+            'Житомирська':      'Житомирської області',
+            'Рівненська':       'Рівненської області',
+            'Волинська':        'Волинської області',
+            'Тернопільська':    'Тернопільської області',
+            'Львівська':        'Львівської області',
+            'Закарпатська':     'Закарпатської області',
+            'Чернівецька':      'Чернівецької області',
+        };
+
+        // Rodovyi vidminok dlya Nominatim (povni nazvy)
+        const OBLAST_FULL_MAP = {
+            'Запорізька область':        'Запорізької області',
+            'Донецька область':          'Донецької області',
+            'Херсонська область':        'Херсонської області',
+            'Луганська область':         'Луганської області',
+            'Харківська область':        'Харківської області',
+            'Миколаївська область':      'Миколаївської області',
+            'Дніпропетровська область':  'Дніпропетровської області',
+            'Одеська область':           'Одеської області',
+            'Київська область':          'Київської області',
+            'Сумська область':           'Сумської області',
+            'Чернігівська область':      'Чернігівської області',
+            'Полтавська область':        'Полтавської області',
+            'Черкаська область':         'Черкаської області',
+            'Кіровоградська область':    'Кіровоградської області',
+            'Вінницька область':         'Вінницької області',
+            'Хмельницька область':       'Хмельницької області',
+            'Житомирська область':       'Житомирської області',
+            'Рівненська область':        'Рівненської області',
+            'Волинська область':         'Волинської області',
+            'Тернопільська область':     'Тернопільської області',
+            'Львівська область':         'Львівської області',
+            'Івано-Франківська область': 'Івано-Франківської області',
+            'Закарпатська область':      'Закарпатської області',
+            'Чернівецька область':       'Чернівецької області',
+            'Запорожская область':       'Запорізької області',
+            'Автономна Республіка Крим': 'Автономної Республіки Крим',
+            'Republic of Crimea':        'Автономної Республіки Крим',
+        };
+
+        let geoDebounceTimer = null;
+        let geoAbortController = null;
+
+        // Локальна база населених пунктів (завантажується один раз)
+        let settlementsDB = null;
+
+        function setGeoStatus(type, msg) {
+            const el = document.getElementById('geoStatus');
+            el.className = 'geo-status ' + type;
+            if (type === 'loading') {
+                el.innerHTML = '<div class="geo-spinner"></div><span>' + msg + '</span>';
+            } else if (type === 'ok') {
+                el.innerHTML = '✓ ' + msg;
+            } else if (type === 'err') {
+                el.innerHTML = '✗ ' + msg;
+            } else {
+                el.innerHTML = '';
+            }
+        }
+
+        // Нормалізуємо MGRS рядок (видаляємо пробіли, кирилиця → латиниця)
+        function normalizeMGRS(raw) {
+            const cyrMap = {
+                'А':'A','В':'B','С':'C','Е':'E','Н':'H','І':'I','К':'K','М':'M',
+                'О':'O','Р':'P','Т':'T','Х':'X','У':'U'
+            };
+            return raw.toUpperCase().replace(/[АВСЕНІКМОРТХУ]/g, c => cyrMap[c]).replace(/\s+/g, '');
+        }
+
+        const MGRS_FULL_RE = /^(\d{1,2}[A-Z])([A-Z]{2})(\d{2}|\d{4}|\d{6}|\d{8}|\d{10})$/;
+        function isMGRSComplete(s) { return MGRS_FULL_RE.test(s); }
+
+        // Відстань між двома точками у км (Haversine)
+        function haversineKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 +
+                      Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        // Пошук найближчого населеного пункту в локальній базі
+        function findNearestLocal(lat, lon) {
+            if (!settlementsDB || settlementsDB.length === 0) return null;
+            let best = null, bestDist = Infinity;
+            for (const s of settlementsDB) {
+                const d = haversineKm(lat, lon, s.lat, s.lon);
+                if (d < bestDist) { bestDist = d; best = s; }
+            }
+            if (!best) return null;
+            return {
+                name: best.name_uk,
+                oblast: OBLAST_SHORT_MAP[best.oblast] || best.oblast,
+                distKm: bestDist
+            };
+        }
+
+        // Завантаження settlements.json (одноразово, при відкритті сторінки)
+        async function loadSettlementsDB() {
+            try {
+                const resp = await fetch('./settlements.json');
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                settlementsDB = await resp.json();
+                console.log(`✅ Settlements DB: ${settlementsDB.length} записів`);
+            } catch(e) {
+                settlementsDB = [];  // порожній — буде Nominatim fallback
+                console.warn('settlements.json не завантажено:', e.message);
+            }
+        }
+        loadSettlementsDB();
+
+        function onCoordsInput(raw) {
+            clearTimeout(geoDebounceTimer);
+            const norm = normalizeMGRS(raw);
+
+            if (!isMGRSComplete(norm)) {
+                setGeoStatus('', '');
+                return;
+            }
+
+            setGeoStatus('loading', 'Визначення населеного пункту…');
+
+            geoDebounceTimer = setTimeout(() => geocodeFromMGRS(norm), 600);
+        }
+
+        async function geocodeFromMGRS(mgrsStr) {
+            // Скасовуємо попередній запит
+            if (geoAbortController) geoAbortController.abort();
+            geoAbortController = new AbortController();
+
+            let coords;
+            try {
+                // mgrs.toPoint повертає [lon, lat]
+                coords = window.mgrs.toPoint(mgrsStr);
+            } catch(e) {
+                setGeoStatus('err', 'Невірний формат MGRS');
+                return;
+            }
+
+            const [lon, lat] = coords;
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=uk&zoom=10`;
+
+            try {
+                const resp = await fetch(url, {
+                    signal: geoAbortController.signal,
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json();
+
+                const addr = data.address || {};
+
+                // Визначаємо назву населеного пункту (пріоритет від дрібного до великого)
+                const settlement =
+                    addr.village || addr.hamlet || addr.town || addr.city ||
+                    addr.suburb  || addr.municipality || addr.county || '';
+
+                // Визначаємо область
+                const oblastRaw = addr.state || addr.region || '';
+                const oblast = OBLAST_MAP[oblastRaw] || oblastRaw;
+
+                if (!settlement && !oblast) {
+                    setGeoStatus('err', 'Населений пункт не знайдено');
+                    return;
+                }
+
+                // Формат: «НАЗВА, Назвівської області»
+                const settlementUpper = settlement.toUpperCase();
+                const locationValue = settlement
+                    ? (oblast ? `${settlementUpper}, ${oblast}` : settlementUpper)
+                    : oblast;
+
+                document.getElementById('location').value = locationValue;
+                setGeoStatus('ok', `${settlement || ''} — знайдено автоматично`);
+
+            } catch(e) {
+                if (e.name === 'AbortError') return; // скасовано — ігноруємо
+                console.error('Geocoding error:', e);
+                setGeoStatus('err', 'Помилка з\'єднання з Nominatim');
+            }
+        }
+    </script>
+
+</body>
+</html>
