@@ -398,12 +398,6 @@
 
         <div class="row">
             <div class="form-group col">
-                <label>Населений пункт, область (через кому):</label>
-                <input type="text" id="location" placeholder="Роботине, Запорізької області" required>
-                <div id="geoStatus" class="geo-status"></div>
-            </div>
-
-            <div class="form-group col">
                 <label>Координата (MGRS):
                     <span class="tooltip-icon" style="float:right;">ℹ️
                         <span class="tooltiptext">Введіть MGRS-координату — населений пункт та область підставляться автоматично.</span>
@@ -411,6 +405,12 @@
                 </label>
                 <input type="text" id="coords" placeholder="36U YA 12345 67890" required
                        oninput="onCoordsInput(this.value)">
+            </div>
+
+            <div class="form-group col">
+                <label>Населений пункт, область (через кому):</label>
+                <input type="text" id="location" placeholder="Роботине, Запорізької області" required>
+                <div id="geoStatus" class="geo-status"></div>
             </div>
         </div>
 
@@ -515,7 +515,7 @@
     </div>
 
     <footer class="footer-note">
-        Версія 2.1 · © Ліцензія MIT — можна вільно використовувати, копіювати та змінювати цей код у власних проєктах.
+        Версія 2.2 · © Ліцензія MIT — можна вільно використовувати, копіювати та змінювати цей код у власних проєктах.
     </footer>
 
     <script>

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Вбудовує settlements.json у Report_2.1.html (замінює рядок `const settlementsDB = [...]`).
+Вбудовує settlements.json у Report_2.2.html (замінює рядок `const settlementsDB = [...]`).
 Запуск (після fetch_settlements.py):  python embed_settlements.py
 Залишає лише потрібні застосунку поля: name_uk, oblast, lat, lon.
 """
 import json, re, sys, os
 
-HTML = "Report_2.1.html"
+HTML = "Report_2.2.html"
 SRC  = "settlements.json"
 
 def main():
