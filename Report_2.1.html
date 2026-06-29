@@ -10,6 +10,8 @@
             --font-main: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             --primary-color: #4CAF50;
             --secondary-color: #757575;
+            --copy-color: #008CBA;
+            --copy-color-hover: #0077a3;
             
             /* Світла тема (за замовчуванням) */
             --bg-color: #f4f4f9;
@@ -85,7 +87,27 @@
         }
 
         .form-group { margin-bottom: 15px; }
-        
+
+        .owner-settings {
+            margin-bottom: 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            padding: 10px 12px;
+        }
+        .owner-settings summary {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            user-select: none;
+            color: var(--secondary-color);
+        }
+        .owner-settings .hint {
+            font-size: 12px;
+            color: var(--secondary-color);
+            margin: 10px 0 0;
+        }
+
         label { 
             display: block; 
             margin-bottom: 5px; 
@@ -133,6 +155,13 @@
         
         .btn-secondary { background-color: var(--secondary-color); }
         .btn-secondary:hover { background-color: #5a5a5a; }
+
+        .btn-copy { margin-top: 10px; width: 100%; background-color: var(--copy-color); }
+        .btn-copy:hover { background-color: var(--copy-color-hover); }
+        .btn-copy:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-copied { background-color: var(--primary-color) !important; }
+
+        .input-error { border-color: #e53935 !important; box-shadow: 0 0 0 1px #e53935; }
         
         .result-box { 
             margin-top: 25px; 
@@ -327,7 +356,7 @@
 
     <div class="header-row">
         <h2>Генератор подання на втрату БпЛА</h2>
-        <select id="themeSelect" onchange="setTheme(this.value)">
+        <select id="themeSelect" onchange="setTheme(this.value)" title="Тема оформлення" aria-label="Тема оформлення">
             <option value="auto">🌓 </option>
             <option value="light">☀️ </option>
             <option value="dark">🌙 </option>
@@ -451,25 +480,27 @@
             <input type="text" id="batteryType" placeholder="Flight Battery">
         </div>
 
-        <div class="row">
-            <div class="form-group col">
-                <label>Підрозділ:
-                    <span class="tooltip-icon" style="float:right;">ℹ️
-                        <span class="tooltiptext">Зберігається локально у вашому браузері — достатньо ввести один раз.</span>
-                    </span>
-                </label>
-                <input type="text" id="subdivision" placeholder="напр., РР" oninput="saveOwner()">
+        <details class="owner-settings">
+            <summary>⚙️ Підрозділ і військова частина</summary>
+            <div class="row" style="margin-top: 12px;">
+                <div class="form-group col" style="margin-bottom: 0;">
+                    <label>Підрозділ:</label>
+                    <input type="text" id="subdivision" placeholder="напр., БУАР" oninput="saveOwner()">
+                </div>
+                <div class="form-group col" style="margin-bottom: 0;">
+                    <label>Військова частина:</label>
+                    <input type="text" id="unit" placeholder="напр., 100 одшбр" oninput="saveOwner()">
+                </div>
             </div>
-            <div class="form-group col">
-                <label>Військова частина:</label>
-                <input type="text" id="unit" placeholder="напр., 95 одшбр" oninput="saveOwner()">
-            </div>
-        </div>
+            <p class="hint">Зберігається локально у вашому браузері — достатньо ввести один раз.</p>
+        </details>
 
         <div class="button-group">
             <button type="submit" class="btn-primary">Згенерувати подання</button>
             <button type="button" class="btn-secondary" onclick="resetForm()">Нове подання</button>
         </div>
+
+        <div id="formMsg" class="geo-status" style="margin-top: 12px; justify-content: center;"></div>
 
     </form>
 
@@ -480,11 +511,11 @@
             </span>
         </label>
         <textarea id="outputText" rows="5" readonly></textarea>
-        <button onclick="copyText()" style="margin-top: 10px; background-color: #008CBA; width: 100%;">Копіювати в буфер</button>
+        <button type="button" id="copyBtn" class="btn-copy" onclick="copyText()" disabled>Копіювати в буфер</button>
     </div>
 
     <footer class="footer-note">
-        © Ліцензія MIT — можна вільно використовувати, копіювати та змінювати цей код у власних проєктах.
+        Версія 2.1 · © Ліцензія MIT — можна вільно використовувати, копіювати та змінювати цей код у власних проєктах.
     </footer>
 
     <script>
@@ -924,8 +955,23 @@
         function resetForm() {
             document.getElementById("generatorForm").reset();
             document.getElementById("outputText").value = "";
+            document.getElementById("coords").classList.remove("input-error");
+            document.getElementById("copyBtn").disabled = true;
+            clearFormMsg();
             setDateTimeAndBattery();
             updateBattery();
+        }
+
+        // Інлайн-повідомлення форми (замість alert)
+        function showFormMsg(type, msg) {
+            const el = document.getElementById('formMsg');
+            el.className = 'geo-status ' + type;
+            el.innerHTML = (type === 'err' ? '✗ ' : '') + msg;
+        }
+        function clearFormMsg() {
+            const el = document.getElementById('formMsg');
+            el.className = 'geo-status';
+            el.innerHTML = '';
         }
 
         function generateText() {
@@ -942,10 +988,15 @@
             // Вимагаємо MGRS з однаковою кількістю цифр по обидві сторони (наприклад, 5 і 5, 4 і 4)
             const mgrsRegex = new RegExp('^' + MGRS_ZONES + '\\s?[A-Z]{2}\\s?((\\d)\\s?(\\d)|(\\d{2})\\s?(\\d{2})|(\\d{3})\\s?(\\d{3})|(\\d{4})\\s?(\\d{4})|(\\d{5})\\s?(\\d{5}))$');
             
+            const coordsField = document.getElementById("coords");
             if (!mgrsRegex.test(coordsStr)) {
-                alert("Помилка! Координати мають бути у форматі MGRS з однаковою кількістю цифр, та знаходитись у вказаних областях (зони 36T, 36U, 36V, 37T, 37U).\nНаприклад: 36U YA 12345 67890");
-                return; 
+                coordsField.classList.add("input-error");
+                coordsField.focus();
+                showFormMsg('err', 'Невірний формат MGRS. Приклад: 36U YA 12345 67890 (зони 36T/U/V, 37T/U, однакова кількість цифр з обох боків).');
+                return;
             }
+            coordsField.classList.remove("input-error");
+            clearFormMsg();
 
             const date = formatDateUA(selectedDate);
 
@@ -979,28 +1030,37 @@
                 : `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно${owner}, а саме: БпЛА ${droneType} № ${propNumber} з акумуляторною батареєю ${batteryType} – 1 ${unitType} (СА та ППО).`;
 
             document.getElementById("outputText").value = result;
+            document.getElementById("copyBtn").disabled = false;
             document.getElementById("outputText").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        function flashCopied() {
+            const btn = document.getElementById('copyBtn');
+            btn.textContent = 'Скопійовано ✓';
+            btn.classList.add('btn-copied');
+            setTimeout(() => {
+                btn.textContent = 'Копіювати в буфер';
+                btn.classList.remove('btn-copied');
+            }, 1500);
         }
 
         function copyText() {
             const textToCopy = document.getElementById("outputText");
             if (textToCopy.value === "") {
-                alert("Спочатку згенеруйте текст подання!");
+                showFormMsg('err', 'Спочатку згенеруйте подання');
                 return;
             }
-            
+
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy.value).then(() => {
-                    alert("Текст скопійовано! Можете вставляти в документ або месенджер.");
-                }).catch(() => {
+                navigator.clipboard.writeText(textToCopy.value).then(flashCopied).catch(() => {
                     textToCopy.select();
                     document.execCommand("copy");
-                    alert("Текст скопійовано!");
+                    flashCopied();
                 });
             } else {
                 textToCopy.select();
                 document.execCommand("copy");
-                alert("Текст скопійовано!");
+                flashCopied();
             }
         }
 
@@ -1128,6 +1188,7 @@
 
         function onCoordsInput(raw) {
             clearTimeout(geoDebounceTimer);
+            document.getElementById("coords").classList.remove("input-error");
             const norm = normalizeMGRS(raw);
 
             if (!isMGRSComplete(norm)) {
