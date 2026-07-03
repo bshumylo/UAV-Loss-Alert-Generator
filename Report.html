@@ -1039,9 +1039,10 @@
             const ownerName = [subdivision, unit].filter(Boolean).join(' ');
             const owner = ownerName ? ` ${ownerName}` : '';
 
-            const isFlyeye = droneType.includes("FLYEYE");
+            const noBatteryDroneTypes = ["FLYEYE", "Кажан", "Вампір"];
+			const isNoBattery = noBatteryDroneTypes.some(type => droneType.includes(type));
 
-            const result = isFlyeye
+			const result = isNoBattery
                 ? `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно${owner}, а саме: БпЛА ${droneType} № ${propNumber} – 1 ${unitType} (СА та ППО).`
                 : `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно${owner}, а саме: БпЛА ${droneType} № ${propNumber} з акумуляторною батареєю ${batteryType} – 1 ${unitType} (СА та ППО).`;
 
