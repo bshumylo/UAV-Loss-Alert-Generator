@@ -393,6 +393,7 @@
                 <option value="під час розвідувального польоту">під час розвідувального польоту</option>
                 <option value="під час бойового вильоту">під час бойового вильоту</option>
                 <option value="під час нанесення бойового ураження">під час нанесення бойового ураження</option>
+				<option value="під час польоту для здійснення ураження живої сили противник">під час польоту для здійснення ураження живої сили противник</option>
             </select>
         </div>
 
@@ -417,9 +418,10 @@
         <div class="form-group">
             <label>Причина втрати:</label>
             <select id="reason" required>
-                <option value="внаслідок дії засобів РЕБ противника">внаслідок дії засобів РЕБ противника</option>
+                <option value="внаслідок дії засобів радіоелектронної боротьби противника">внаслідок дії засобів радіоелектронної боротьби противника</option>
                 <option value="внаслідок обстрілу зі стрілецької зброї противником">внаслідок обстрілу зі стрілецької зброї противником</option>
                 <option value="внаслідок дії ППО противника">внаслідок дії ППО противника</option>
+				<option value="внаслідок удару ворожим FPV-дроном">внаслідок удару ворожим FPV-дроном</option>
             </select>
         </div>
 
@@ -436,7 +438,11 @@
                     <option value="DJI Mavic 3 Fly More Combo">DJI Mavic 3 Fly More Combo</option>
                     <option value="DJI Matrice 4Т">DJI Matrice 4Т</option>
                     <option value="DJI Matrice 4E">DJI Matrice 4E</option>
-                    <option value="Autel EVO MAX 4T">Autel EVO MAX 4T</option>
+                    <option value="Autel 4N">Autel 4N</option>
+					<option value="Autel 4T">Autel 4T</option>
+					<option value="Autel EVO MAX 4T">Autel EVO MAX 4T</option>
+					<option value="Вампір">Вампір</option>
+					<option value="Кажан">Кажан</option>
                     <option value="FLYEYE 3.0 (UA)">FLYEYE 3.0 (UA)</option>
 					<option value="FLYEYE 3.0 (UA) TK">FLYEYE 3.0 (UA) TK</option>
                 </select>
@@ -485,11 +491,11 @@
             <div class="row" style="margin-top: 12px;">
                 <div class="form-group col" style="margin-bottom: 0;">
                     <label>Підрозділ:</label>
-                    <input type="text" id="subdivision" placeholder="напр., БУАР" oninput="saveOwner()">
+                    <input type="text" id="subdivision" placeholder="напр., БУАР" required oninput="saveOwner()">
                 </div>
                 <div class="form-group col" style="margin-bottom: 0;">
                     <label>Військова частина:</label>
-                    <input type="text" id="unit" placeholder="напр., 100 одшбр" oninput="saveOwner()">
+                    <input type="text" id="unit" placeholder="напр., 100 одшбр" required oninput="saveOwner()">
                 </div>
             </div>
             <p class="hint">Зберігається локально у вашому браузері — достатньо ввести один раз.</p>
@@ -515,7 +521,7 @@
     </div>
 
     <footer class="footer-note">
-        Версія 2.2 · © Ліцензія MIT — можна вільно використовувати, копіювати та змінювати цей код у власних проєктах.
+        Версія 2.3 · © Ліцензія MIT — можна вільно використовувати, копіювати та змінювати цей код у власних проєктах.
     </footer>
 
     <script>
@@ -912,14 +918,24 @@
                 batteryInput.value = "DJI Matrice 4 Series";
                 unitSelect.value = "шт.";
             } else if (drone.includes("Autel")) {
-                batteryInput.value = "Autel EVO Max 4T Battery";
+                batteryInput.value = "для Autel EVO Max";
                 unitSelect.value = "шт.";
             } else if (drone.includes("FLYEYE")) {
                 batteryInput.value = "";
                 batteryInput.disabled = true;
                 batteryInput.style.opacity = "0.5";
                 unitSelect.value = "шт.";
-            } else {
+			} else if (drone.includes("Вампір")) {
+                batteryInput.value = "";
+                batteryInput.disabled = true;
+                batteryInput.style.opacity = "0.5";
+                unitSelect.value = "од.";
+			} else if (drone.includes("Кажан")) {
+                batteryInput.value = "";
+                batteryInput.disabled = true;
+                batteryInput.style.opacity = "0.5";
+                unitSelect.value = "од.";
+			} else {
                 batteryInput.value = "";
                 unitSelect.value = "шт.";
             }
