@@ -38,4 +38,4 @@
 - Тримайте файл `Report.html` у надійному місці (наприклад, зробіть копію). Уся програма — в одному файлі.
 - Дані зберігаються лише у вашому браузері на цьому комп'ютері. Якщо відкрити файл на іншому пристрої, поля «Підрозділ/В.Ч.» доведеться заповнити заново.
 
-Ліцензія AGPL - [LICENSE](https://github.com/bshumylo/UAV-Loss-Alert-Generator#AGPL-3.0-1-ov-file)
+Ліцензія AGPL-3 - [LICENSE](https://github.com/bshumylo/UAV-Loss-Alert-Generator#AGPL-3.0-1-ov-file)
