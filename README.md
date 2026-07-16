@@ -6,7 +6,7 @@
 
 ## Як запустити
 
-Подвійним кліком відкрийте файл **`Report.html`** у будь-якому браузері (Chrome, Edge, Firefox тощо).
+Завантажте останню версію файлу **`Report.html`** в [Releases](https://github.com/bshumylo/UAV-Loss-Alert-Generator/releases/latest). Подвійним кліком відкрийте цей файл у будь-якому браузері (Chrome, Edge, Firefox тощо).
 
 Більше нічого встановлювати не треба:
 
