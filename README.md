@@ -39,4 +39,8 @@
 - Дані зберігаються лише у вашому браузері на цьому комп'ютері. Якщо відкрити файл на іншому пристрої, поля «Підрозділ/В.Ч.» доведеться заповнити заново.
 
 
-Ліцензія AGPL-3.0 - [LICENSE](https://github.com/bshumylo/UAV-Loss-Alert-Generator#AGPL-3.0-1-ov-file)
+## License
+
+AGPL-3.0 — see [LICENSE](LICENSE).
+
+Author: bshumylo
