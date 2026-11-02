@@ -12,7 +12,7 @@
 
 ## Як запустити
 
-Завантажте останню версію файлу **`Подання.html`** в [Releases](https://github.com/bshumylo/UAV-Loss-Alert-Generator/releases/latest). Відкрийте його подвійним кліком у будь-якому браузері на комп'ютері чи телефоні (Chrome, Edge, Firefox тощо).
+Завантажте останню версію файлу **`Podannya.html`** (це і є «Подання.html») в [Releases](https://github.com/bshumylo/UAV-Loss-Alert-Generator/releases/latest). Відкрийте його подвійним кліком у будь-якому браузері на комп'ютері чи телефоні (Chrome, Edge, Firefox тощо).
 
 Більше нічого встановлювати не треба:
 

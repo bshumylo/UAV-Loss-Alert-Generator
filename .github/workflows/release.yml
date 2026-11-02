@@ -46,7 +46,9 @@ jobs:
 
       - name: Create release
         run: |
-          gh release create "${{ steps.ver.outputs.tag }}" "Подання.html" \
+          # GitHub strips non-ASCII from asset names (-> default.html), so attach under a Latin name
+          cp "Подання.html" Podannya.html
+          gh release create "${{ steps.ver.outputs.tag }}" Podannya.html \
             --target "${{ github.sha }}" \
             --title "v${{ steps.ver.outputs.tag }}" \
             --generate-notes \
