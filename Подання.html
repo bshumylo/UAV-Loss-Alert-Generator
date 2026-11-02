@@ -1584,6 +1584,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         try { localStorage.removeItem(REYESTR_KEY); } catch (e) {}
         try { localStorage.removeItem('subdivision'); } catch (e) {}
         try { localStorage.removeItem('unit'); } catch (e) {}
+        // посилання на файл реєстру (File System Access) зберігається в IndexedDB
+        try { indexedDB.deleteDatabase('reyestrDB'); } catch (e) {}
         reyestr = null;
         const subEl = document.getElementById('subdivision');
         if (subEl) subEl.value = '';
