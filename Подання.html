@@ -1342,7 +1342,7 @@
             // Округлення до 2 знаків (~1 км) для зменшення витоку точності
             const rLat = lat.toFixed(2);
             const rLon = lon.toFixed(2);
-            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${rLat}&lon=${rLon}&accept-language=uk&zoom=10`;
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${rLat}&lon=${rLon}&accept-language=uk&zoom=14`;
 
             try {
                 const resp = await fetch(url, {
@@ -1358,7 +1358,7 @@
 
                 const settlement =
                     addr.village || addr.hamlet || addr.town || addr.city ||
-                    addr.suburb  || addr.municipality || addr.county || '';
+                    addr.suburb  || addr.county || '';
 
                 const oblastRaw = addr.state || addr.region || '';
                 const oblast = OBLAST_FULL_MAP[oblastRaw] || oblastRaw;
@@ -1374,7 +1374,8 @@
                     : oblast;
 
                 document.getElementById('location').value = locationValue;
-                setGeoStatus('ok', `${settlement || ''} — знайдено онлайн`);
+                if (settlement) setGeoStatus('ok', `${settlement} — знайдено онлайн`);
+                else setGeoStatus('warn', 'Знайдено лише область — введіть населений пункт вручну');
 
             } catch(e) {
                 if (e.name === 'AbortError') return;
