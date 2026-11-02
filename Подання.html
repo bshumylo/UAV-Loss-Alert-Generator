@@ -1302,7 +1302,9 @@
             const norm = normalizeMGRS(raw);
 
             if (!isMGRSComplete(norm)) {
-                setGeoStatus('', '');
+                const other = norm.match(/^(\d{1,2}[C-HJ-NP-X])[A-Z]{2}(\d{2}|\d{4}|\d{6}|\d{8}|\d{10})$/);
+                if (other) setGeoStatus('warn', `Зона ${other[1]} не підтримується (потрібні 35–37, смуги T/U/V)`);
+                else setGeoStatus('', '');
                 return;
             }
 
