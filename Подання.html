@@ -2,6 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src https://nominatim.openstreetmap.org; form-action 'none'; base-uri 'none'">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Генератор подання про втрату</title>
     <style>
@@ -440,6 +441,10 @@
                 <label>Населений пункт, область (через кому):</label>
                 <input type="text" id="location" placeholder="Роботине, Запорізької області" required>
                 <div id="geoStatus" class="geo-status"></div>
+                <label style="display:flex; align-items:flex-start; gap:6px; font-weight:normal; font-size:0.85em; margin-top:6px; cursor:pointer;">
+                    <input type="checkbox" id="allowOnline" autocomplete="off" style="width:auto; margin-top:3px;">
+                    <span>Дозволити онлайн-пошук (OpenStreetMap) — координата буде передана в інтернет</span>
+                </label>
             </div>
         </div>
 
@@ -1024,7 +1029,7 @@
         function showFormMsg(type, msg) {
             const el = document.getElementById('formMsg');
             el.className = 'geo-status ' + type;
-            el.innerHTML = (type === 'err' ? '✗ ' : '') + msg;
+            el.textContent = (type === 'err' ? '✗ ' : '') + msg;
         }
         function clearFormMsg() {
             const el = document.getElementById('formMsg');
@@ -1231,16 +1236,19 @@
         function setGeoStatus(type, msg) {
             const el = document.getElementById('geoStatus');
             el.className = 'geo-status ' + type;
+            el.textContent = '';
             if (type === 'loading') {
-                el.innerHTML = '<div class="geo-spinner"></div><span>' + msg + '</span>';
+                const sp = document.createElement('div');
+                sp.className = 'geo-spinner';
+                const t = document.createElement('span');
+                t.textContent = msg;
+                el.append(sp, t);
             } else if (type === 'ok') {
-                el.innerHTML = '✓ ' + msg;
+                el.textContent = '✓ ' + msg;
             } else if (type === 'err') {
-                el.innerHTML = '✗ ' + msg;
+                el.textContent = '✗ ' + msg;
             } else if (type === 'warn') {
-                el.innerHTML = '⚠ ' + msg;
-            } else {
-                el.innerHTML = '';
+                el.textContent = '⚠ ' + msg;
             }
         }
 
@@ -1321,12 +1329,21 @@
                 return;
             }
 
-            // ── 2. Fallback — Nominatim (онлайн) ──────────────────────────
-            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=uk&zoom=10`;
+            // ── 2. Fallback — Nominatim (онлайн), лише за явною згодою ────
+            if (!document.getElementById('allowOnline').checked) {
+                setGeoStatus('warn', 'Не знайдено в локальній базі — введіть населений пункт вручну');
+                return;
+            }
+            // Округлення до 2 знаків (~1 км) для зменшення витоку точності
+            const rLat = lat.toFixed(2);
+            const rLon = lon.toFixed(2);
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${rLat}&lon=${rLon}&accept-language=uk&zoom=10`;
 
             try {
                 const resp = await fetch(url, {
                     signal: geoAbortController.signal,
+                    referrerPolicy: 'no-referrer',
+                    credentials: 'omit',
                     headers: { 'Accept': 'application/json' }
                 });
                 if (!resp.ok) throw new Error('HTTP ' + resp.status);
