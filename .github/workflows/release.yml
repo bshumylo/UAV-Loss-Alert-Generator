@@ -6,6 +6,11 @@ on:
     paths:
       - "Подання.html"
   workflow_dispatch:
+    inputs:
+      normalize:
+        description: "Rename old release titles to 'vX.Y' and delete date-style releases/tags (vYYYY.MM.DD-N)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -13,19 +18,36 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compute version
+      - name: Normalize existing releases
+        if: inputs.normalize
+        run: |
+          gh release list --limit 100 --json tagName,name | jq -r '.[] | [.tagName, .name] | @tsv' |
+          while IFS=$'\t' read -r tag name; do
+            if [[ "$tag" =~ ^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]+$ ]]; then
+              gh release delete "$tag" --cleanup-tag --yes
+            elif [[ "$tag" =~ ^[0-9]+\.[0-9]+$ ]]; then
+              new=$(sed -E 's/^v\.?[[:space:]]*/v/' <<<"$name")
+              [[ "$new" == v* ]] || new="v$tag"
+              gh release edit "$tag" --title "$new"
+            fi
+          done
+
+      - name: Compute next version
         id: ver
-        run: echo "tag=v$(date -u +%Y.%m.%d)-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+        run: |
+          last=$(gh release list --limit 100 --json tagName --jq '.[].tagName' | grep -E '^[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          last=${last:-0.0}
+          echo "tag=${last%.*}.$(( ${last#*.} + 1 ))" >> "$GITHUB_OUTPUT"
 
       - name: Create release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ steps.ver.outputs.tag }}" "Подання.html" \
             --target "${{ github.sha }}" \
-            --title "${{ steps.ver.outputs.tag }}" \
+            --title "v${{ steps.ver.outputs.tag }}" \
             --generate-notes \
             --latest
