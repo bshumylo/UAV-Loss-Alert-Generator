@@ -385,6 +385,11 @@
         <input type="file" id="reyestrFile" accept=".xlsx,.xlsm,.xlsb" style="display:none"
                onchange="loadReyestrFile(this.files[0])">
         <div id="reyestrStatus" class="geo-status" style="margin-top:8px;"></div>
+        <button type="button" class="btn-secondary" style="width:auto; padding: 8px 14px; margin-top:12px;"
+                onclick="clearLocalData()">🗑 Очистити збережені дані</button>
+        <p class="hint" style="margin: 8px 0 0;">
+            Дані зберігаються лише в цьому браузері. Очищайте після роботи на чужому/спільному комп'ютері.
+        </p>
     </details>
     <button type="button" id="refreshReyestrBtn" class="btn-secondary"
             style="flex:0 0 auto; width:auto; min-width:0; align-self:flex-start; box-sizing:border-box; padding:10px 14px; border:1px solid transparent; font-size:14px; font-weight:600; line-height:normal; white-space:nowrap;"
@@ -1569,6 +1574,29 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             }
         }
     }
+
+    // Очищення локальних даних цього браузера (localStorage на file:// спільний
+    // для всіх локальних HTML-файлів). Тема (appTheme) не чіпається.
+    window.clearLocalData = function () {
+        if (!confirm('Видалити з цього браузера збережені реєстр, підрозділ і військову частину?')) return;
+        try { localStorage.removeItem(REYESTR_KEY); } catch (e) {}
+        try { localStorage.removeItem('subdivision'); } catch (e) {}
+        try { localStorage.removeItem('unit'); } catch (e) {}
+        reyestr = null;
+        const subEl = document.getElementById('subdivision');
+        if (subEl) subEl.value = '';
+        const unitEl = document.getElementById('unit');
+        if (unitEl) unitEl.value = '';
+        const dl = document.getElementById('propNumbersList');
+        if (dl) dl.innerHTML = '';
+        const asOfEl = document.getElementById('reyestrAsOf');
+        if (asOfEl) {
+            asOfEl.textContent = '';
+            asOfEl.style.color = '';
+            asOfEl.style.fontWeight = '';
+        }
+        setReyestrStatus('ok', 'Збережені дані видалено');
+    };
 
     window.updateNumList = function () {
         const dl = document.getElementById('propNumbersList');
