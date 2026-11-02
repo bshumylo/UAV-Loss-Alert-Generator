@@ -1327,7 +1327,7 @@
 
             // ── 1. Спочатку — локальна база ───────────────────────────────
             const local = findNearestLocal(lat, lon);
-            if (local) {
+            if (local && !local.outOfCoverage) {
                 const locationValue = `${local.name.toUpperCase()}, ${local.oblast}`;
                 document.getElementById('location').value = locationValue;
                 setGeoStatus('ok', `${local.name} — знайдено локально`);
