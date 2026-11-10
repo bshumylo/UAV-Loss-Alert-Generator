@@ -74,6 +74,6 @@
 
 ## License
 
-AGPL-3.0 — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
 
 Author: bshumylo
