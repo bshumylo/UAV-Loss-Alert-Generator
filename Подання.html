@@ -956,6 +956,13 @@
             }
         });
 
+        // Типи БпЛА без окремої АКБ (поле АКБ вимикається). Регістр не важливий.
+        const NO_BATTERY_TYPES = ["лелека", "shark", "вампір", "кажан", "flyeye"];
+        function isNoBatteryType(drone) {
+            const d = String(drone || "").toLowerCase();
+            return NO_BATTERY_TYPES.some(t => d.includes(t));
+        }
+
         function updateBattery() {
             const drone = document.getElementById("droneType").value;
             const batteryInput = document.getElementById("batteryType");
@@ -974,21 +981,27 @@
             } else if (drone.includes("Autel")) {
                 batteryInput.value = "для Autel EVO Max";
                 unitSelect.value = "шт.";
-            } else if (drone.includes("FLYEYE")) {
+            } else if (drone.toLowerCase().includes("flyeye")) {
                 batteryInput.value = "";
                 batteryInput.disabled = true;
                 batteryInput.style.opacity = "0.5";
                 unitSelect.value = "шт.";
-			} else if (drone.includes("Вампір")) {
+			} else if (drone.toLowerCase().includes("вампір")) {
                 batteryInput.value = "";
                 batteryInput.disabled = true;
                 batteryInput.style.opacity = "0.5";
                 unitSelect.value = "од.";
-			} else if (drone.includes("Кажан")) {
+			} else if (drone.toLowerCase().includes("кажан")) {
                 batteryInput.value = "";
                 batteryInput.disabled = true;
                 batteryInput.style.opacity = "0.5";
                 unitSelect.value = "од.";
+			} else if (isNoBatteryType(drone)) {
+                // Лелека, Shark та інші типи без АКБ
+                batteryInput.value = "";
+                batteryInput.disabled = true;
+                batteryInput.style.opacity = "0.5";
+                unitSelect.value = "шт.";
 			} else {
                 batteryInput.value = "";
                 unitSelect.value = "шт.";
@@ -1094,8 +1107,8 @@
             const ownerName = [subdivision, unit].filter(Boolean).join(' ');
             const owner = ownerName ? ` ${ownerName}` : '';
 
-            const noBatteryDroneTypes = ["FLYEYE", "Кажан", "Вампір"];
-			const isNoBattery = noBatteryDroneTypes.some(type => droneType.includes(type));
+            // Фраза про АКБ не додається, якщо тип без АКБ або поле АКБ порожнє
+			const isNoBattery = isNoBatteryType(droneType) || !String(batteryType).trim();
 
 			const result = isNoBattery
                 ? `${date} о ${time}, ${missionType} поблизу н.п. ${finalLocation} (${coordsStr}), ${reason}, було втрачено майно${owner}, а саме: БпЛА ${droneType} № ${propNumber} – 1 ${unitType} (СА та ППО).`
