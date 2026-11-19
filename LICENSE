@@ -19,3 +19,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+----------------------------------------------------------------------
+Third-party materials
+
+The MIT License above covers the source code written for this project.
+Other materials keep their own licenses:
+
+- e-Ukraine font and the visual style of mod.gov.ua: Creative Commons
+  Attribution 4.0 International (CC BY 4.0).
+  https://creativecommons.org/licenses/by/4.0/legalcode
+  The font file is not part of this repository. The page uses it only
+  if it is installed on the user's computer.
+- SheetJS 0.20.3 (embedded in the page): Apache License 2.0.
+- mgrs.js (embedded in the page): MIT License.
+- Place names from OpenStreetMap (online search, only when the user
+  enables it): (c) OpenStreetMap contributors, ODbL.
